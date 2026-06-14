@@ -91,6 +91,13 @@ The reports/ folder contains sample reports generated for:
 
 ---
 
+## Screenshots
+
+Home Page
+![Home Page](screenshots/Home_Page.png)
+
+---
+
 ## About the Developer
 
 Built by Manikanth Pattar
