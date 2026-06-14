@@ -61,7 +61,7 @@ VulnReportAI/
 ## Setup Instructions
 
 ### 1. Clone the repository
-git clone https://github.com/YOUR_GITHUB_USERNAME/VulnReportAI.git
+git clone https://github.com/Mani1441/VulnReportAI.git
 cd VulnReportAI
 
 ### 2. Install dependencies
