@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VulnReportAI — VAPT Report Generator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f0f2f5; padding: 20px; color: #1a1a2e; }
+  .container { max-width: 820px; margin: 0 auto; }
+  .header { background: #1a1a2e; color: white; padding: 20px 24px; border-radius: 12px; margin-bottom: 20px; }
+  .header h1 { font-size: 22px; margin-bottom: 4px; }
+  .header p { font-size: 13px; opacity: 0.7; }
+  .card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 22px; margin-bottom: 16px; }
+  .card h2 { font-size: 15px; margin-bottom: 16px; color: #374151; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  label { font-size: 12px; font-weight: 600; color: #6b7280; display: block; margin-bottom: 5px; margin-top: 12px; }
+  input, select, textarea { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; font-family: inherit; background: #f9fafb; color: #111827; outline: none; transition: border 0.2s; }
+  input:focus, select:focus, textarea:focus { border-color: #534AB7; background: white; }
+  textarea { resize: vertical; font-family: monospace; font-size: 12px; line-height: 1.6; }
+  .sample-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .sample-btn { font-size: 11px; padding: 4px 12px; border-radius: 20px; border: 1px solid #d1d5db; background: white; cursor: pointer; color: #6b7280; }
+  .sample-btn:hover { background: #f3f4f6; }
+  .gen-btn { width: 100%; padding: 13px; background: #534AB7; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 16px; transition: background 0.2s; }
+  .gen-btn:hover { background: #4a41a3; }
+  .gen-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+  .loader { text-align: center; padding: 24px; font-size: 14px; color: #6b7280; display: none; }
+  .loader.show { display: block; }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #e5e7eb; border-top-color: #534AB7; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; font-size: 13px; color: #dc2626; margin-top: 10px; display: none; }
+  .error.show { display: block; }
+  .result { display: none; }
+  .result.show { display: block; }
+  .result-header { background: #1a1a2e; color: white; padding: 18px 22px; border-radius: 12px; margin-bottom: 14px; }
+  .result-title { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+  .sev-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .critical { background: #fde8e8; color: #9b1c1c; }
+  .high { background: #fff3e0; color: #7c3d12; }
+  .medium { background: #fef3e8; color: #92400e; }
+  .low { background: #ecfdf5; color: #065f46; }
+  .informational { background: #eff6ff; color: #1e40af; }
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .meta-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; }
+  .meta-label { font-size: 11px; color: #9ca3af; margin-bottom: 3px; font-weight: 500; }
+  .meta-value { font-size: 14px; font-weight: 600; color: #1f2937; }
+  .section { margin-bottom: 14px; }
+  .section-title { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #f3f4f6; }
+  .section-body { font-size: 13px; line-height: 1.7; color: #374151; white-space: pre-wrap; }
+  .action-row { display: flex; gap: 10px; margin-top: 14px; }
+  .action-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #d1d5db; background: white; font-size: 13px; font-weight: 500; cursor: pointer; color: #374151; }
+  .action-btn:hover { background: #f3f4f6; }
+  .action-btn.primary { background: #534AB7; color: white; border-color: #534AB7; }
+  .action-btn.primary:hover { background: #4a41a3; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h1>VulnReportAI</h1>
+    <p>AI-Powered VAPT Finding Report Generator &nbsp;|&nbsp; Built by Manikanth Pattar</p>
+  </div>
+
+  <div class="card">
+    <div class="sample-bar">
+      <span style="font-size:12px;color:#6b7280;margin-right:4px">Quick load:</span>
+      <button class="sample-btn" onclick="loadSample('sqli')">SQL Injection</button>
+      <button class="sample-btn" onclick="loadSample('idor')">IDOR</button>
+      <button class="sample-btn" onclick="loadSample('xss')">Reflected XSS</button>
+      <button class="sample-btn" onclick="loadSample('upload')">File Upload</button>
+      <button class="sample-btn" onclick="loadSample('bola')">BOLA</button>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Vulnerability Name *</label>
+        <input id="f-name" placeholder="e.g. SQL Injection in login endpoint">
+      </div>
+      <div>
+        <label>Vulnerability Type *</label>
+        <select id="f-type">
+          <option value="">Select type...</option>
+          <option>SQL Injection</option>
+          <option>Cross-Site Scripting (XSS)</option>
+          <option>IDOR / Broken Access Control</option>
+          <option>BOLA (API)</option>
+          <option>Unrestricted File Upload</option>
+          <option>Business Logic Flaw</option>
+          <option>CSRF</option>
+          <option>Authentication Weakness</option>
+          <option>Security Misconfiguration</option>
+          <option>SSRF</option>
+          <option>Sensitive Data Exposure</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Affected URL *</label>
+        <input id="f-url" placeholder="https://target.com/api/endpoint">
+      </div>
+      <div>
+        <label>HTTP Method</label>
+        <select id="f-method">
+          <option>POST</option><option>GET</option>
+          <option>PUT</option><option>DELETE</option><option>PATCH</option>
+        </select>
+      </div>
+    </div>
+
+    <label>HTTP Request with Payload *</label>
+    <textarea id="f-request" rows="4" placeholder="Paste your Burp Suite HTTP request here..."></textarea>
+
+    <label>Server Response (key part)</label>
+    <textarea id="f-response" rows="3" placeholder="Paste the relevant part of the server's response..."></textarea>
+
+    <label>Steps to Reproduce</label>
+    <textarea id="f-steps" rows="3" placeholder="1. Navigate to the login page
+2. Intercept the POST request in Burp Suite
+3. Modify the username parameter..."></textarea>
+
+    <label>Additional Context (optional)</label>
+    <input id="f-context" placeholder="e.g. Unauthenticated endpoint, affects all users, black-box test">
+
+    <button class="gen-btn" id="gen-btn" onclick="generateReport()">
+      Generate Professional VAPT Report
+    </button>
+    <div class="error" id="error-box"></div>
+  </div>
+
+  <div class="loader" id="loader">
+    <div class="spinner"></div> Generating your professional VAPT report... (10-20 seconds)
+  </div>
+
+  <div class="result" id="result">
+    <div class="result-header">
+      <div class="result-title" id="r-title"></div>
+      <span class="sev-badge" id="r-severity"></span>
+    </div>
+
+    <div class="card">
+      <div class="meta-grid">
+        <div class="meta-box"><div class="meta-label">CVSS Score</div><div class="meta-value" id="r-cvss"></div></div>
+        <div class="meta-box"><div class="meta-label">OWASP Category</div><div class="meta-value" id="r-owasp"></div></div>
+        <div class="meta-box"><div class="meta-label">CWE ID</div><div class="meta-value" id="r-cwe"></div></div>
+        <div class="meta-box"><div class="meta-label">Affected Component</div><div class="meta-value" id="r-component"></div></div>
+      </div>
+
+      <div class="section"><div class="section-title">Executive Summary</div><div class="section-body" id="r-exec"></div></div>
+      <div class="section"><div class="section-title">Technical Description</div><div class="section-body" id="r-desc"></div></div>
+      <div class="section"><div class="section-title">Business Impact</div><div class="section-body" id="r-impact"></div></div>
+      <div class="section"><div class="section-title">CVSS Vector Breakdown</div><div class="section-body" id="r-vector"></div></div>
+      <div class="section"><div class="section-title">Remediation — Immediate Fix</div><div class="section-body" id="r-rem-imm"></div></div>
+      <div class="section"><div class="section-title">Remediation — Long Term Fix</div><div class="section-body" id="r-rem-lt"></div></div>
+      <div class="section"><div class="section-title">References</div><div class="section-body" id="r-refs"></div></div>
+
+      <div class="action-row">
+        <button class="action-btn primary" onclick="copyReport()"> Full Report</button>
+        <button class="action-btn" onclick="resetForm()">Generate New Report</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SAMPLES = {
+  sqli: { name:"SQL Injection in login form", type:"SQL Injection", url:"https://target.com/login", method:"POST", request:"POST /login HTTP/1.1\nHost: target.com\nContent-Type: application/x-www-form-urlencoded\n\nusername=admin'--&password=anything", response:"HTTP/1.1 200 OK\n{\"status\":\"success\",\"token\":\"eyJhbGci...\"}", steps:"1. Navigate to login\n2. Intercept POST in Burp Suite\n3. Set username to: admin'--\n4. Forward - logged in without password", context:"Unauthenticated endpoint, affects all accounts" },
+  idor: { name:"IDOR in user profile API", type:"IDOR / Broken Access Control", url:"https://target.com/api/user/profile?id=1002", method:"GET", request:"GET /api/user/profile?id=1002 HTTP/1.1\nHost: target.com\nAuthorization: Bearer user1001_token", response:"HTTP/1.1 200 OK\n{\"id\":1002,\"email\":\"victim@mail.com\",\"phone\":\"9876543210\"}", steps:"1. Login as user 1001\n2. Capture GET request with own ID\n3. Change id parameter to 1002\n4. Server returns another user's full PII", context:"Affects all registered users, complete PII exposure" },
+  xss: { name:"Reflected XSS in search parameter", type:"Cross-Site Scripting (XSS)", url:"https://target.com/search?q=test", method:"GET", request:"GET /search?q= HTTP/1.1\nHost: target.com", response:"HTTP/1.1 200 OK\nResults for: ", steps:"1. Go to search page\n2. Enter payload: \n3. Script executes in browser\n4. Cookie value alerted", context:"No input sanitization on q parameter" },
+  upload: { name:"Unrestricted file upload - PHP webshell", type:"Unrestricted File Upload", url:"https://target.com/upload/avatar", method:"POST", request:"POST /upload/avatar HTTP/1.1\nContent-Type: multipart/form-data\n\nfilename=\"shell.php\"\n", response:"HTTP/1.1 200 OK\n{\"url\":\"/uploads/shell.php\"}", steps:"1. Go to profile picture upload\n2. Upload PHP file with image Content-Type\n3. Server saves without extension check\n4. Access /uploads/shell.php?cmd=whoami for RCE", context:"No server-side file type validation" },
+  bola: { name:"BOLA in orders API endpoint", type:"BOLA (API)", url:"https://api.target.com/v1/orders/5521", method:"GET", request:"GET /v1/orders/5521 HTTP/1.1\nHost: api.target.com\nAuthorization: Bearer user_A_token", response:"HTTP/1.1 200 OK\n{\"order_id\":5521,\"user_id\":9034,\"payment\":\"Visa 4242\",\"total\":2499}", steps:"1. Login as User A, note own order ID\n2. Increment order ID in GET request\n3. Server returns User B order with payment info\n4. No ownership validation performed", context:"Affects all orders in system" }
+};
+
+function loadSample(key) {
+  const s = SAMPLES[key];
+  document.getElementById('f-name').value = s.name;
+  document.getElementById('f-type').value = s.type;
+  document.getElementById('f-url').value = s.url;
+  document.getElementById('f-method').value = s.method;
+  document.getElementById('f-request').value = s.request;
+  document.getElementById('f-response').value = s.response;
+  document.getElementById('f-steps').value = s.steps;
+  document.getElementById('f-context').value = s.context;
+}
+
+let lastReport = {};
+
+async function generateReport() {
+  const name = document.getElementById('f-name').value.trim();
+  const type = document.getElementById('f-type').value;
+  const url = document.getElementById('f-url').value.trim();
+  const req = document.getElementById('f-request').value.trim();
+  if (!name || !type || !url || !req) {
+    showError('Please fill in: Vulnerability Name, Type, Affected URL, and HTTP Request.');
+    return;
+  }
+  hideError();
+  setLoading(true);
+  try {
+    const res = await fetch('/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name, type, url,
+        method: document.getElementById('f-method').value,
+        request: req,
+        response: document.getElementById('f-response').value,
+        steps: document.getElementById('f-steps').value,
+        context: document.getElementById('f-context').value
+      })
+    });
+    const data = await res.json();
+    if (!data.success) { showError(data.error); return; }
+    lastReport = data.report;
+    renderReport(data.report);
+  } catch (e) {
+    showError('Connection failed. Make sure app.py is running (python app.py).');
+  } finally {
+    setLoading(false);
+  }
+}
+
+function renderReport(r) {
+  document.getElementById('r-title').textContent = r.title || '';
+  const sevEl = document.getElementById('r-severity');
+  sevEl.textContent = r.severity || '';
+  sevEl.className = 'sev-badge ' + (r.severity || '').toLowerCase();
+  document.getElementById('r-cvss').textContent = r.cvss_score || '';
+  document.getElementById('r-owasp').textContent = r.owasp_category || '';
+  document.getElementById('r-cwe').textContent = r.cwe_id || '';
+  document.getElementById('r-component').textContent = r.affected_component || '';
+  document.getElementById('r-exec').textContent = r.executive_summary || '';
+  document.getElementById('r-desc').textContent = r.description || '';
+  document.getElementById('r-impact').textContent = r.business_impact || '';
+  document.getElementById('r-vector').textContent = r.cvss_vector || '';
+  document.getElementById('r-rem-imm').textContent = r.remediation_immediate || '';
+  document.getElementById('r-rem-lt').textContent = r.remediation_longterm || '';
+  document.getElementById('r-refs').textContent = r.references || '';
+  const result = document.getElementById('result');
+  result.classList.add('show');
+  result.scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyReport() {
+  const r = lastReport;
+  const text = `VAPT FINDING REPORT\n${'='.repeat(50)}\nTitle: ${r.title}\nSeverity: ${r.severity}\nCVSS Score: ${r.cvss_score}\nOWASP: ${r.owasp_category}\nCWE: ${r.cwe_id}\nComponent: ${r.affected_component}\n\nEXECUTIVE SUMMARY\n${r.executive_summary}\n\nTECHNICAL DESCRIPTION\n${r.description}\n\nBUSINESS IMPACT\n${r.business_impact}\n\nCVSS VECTOR\n${r.cvss_vector}\n\nREMEDIATION - IMMEDIATE\n${r.remediation_immediate}\n\nREMEDIATION - LONG TERM\n${r.remediation_longterm}\n\nREFERENCES\n${r.references}`;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.action-btn.primary');
+    btn.textContent = '';
+    setTimeout(() => btn.textContent = 'Copy Full Report', 2000);
+  });
+}
+
+function resetForm() {
+  document.getElementById('result').classList.remove('show');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setLoading(on) {
+  document.getElementById('loader').className = on ? 'loader show' : 'loader';
+  document.getElementById('gen-btn').disabled = on;
+  document.getElementById('gen-btn').textContent = on ? 'Generating... please wait' : 'Generate Professional VAPT Report';
+}
+
+function showError(msg) { const e = document.getElementById('error-box'); e.textContent = msg; e.className = 'error show'; }
+function hideError() { document.getElementById('error-box').className = 'error'; }
+</script>
+</body>
+</html>
+Copy
