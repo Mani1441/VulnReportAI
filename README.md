@@ -2,7 +2,7 @@
 
 An intelligent penetration testing tool that automatically generates
 professional vulnerability assessment reports from raw finding data
-using the Anthropic Claude AI API.
+using the Groq AI API (Llama 3.3-70b model).
 
 ---
 
@@ -38,7 +38,7 @@ CSRF | Authentication Weakness | Security Misconfiguration | SSRF
 | Layer | Technology |
 |---|---|
 | Language | Python 3 |
-| AI Engine | Anthropic Claude API |
+| AI Engine | Groq API (Llama 3.3-70b) |
 | Web Server | Flask |
 | Frontend | HTML / CSS / JavaScript |
 | Security | python-dotenv for key management |
@@ -68,10 +68,11 @@ cd VulnReportAI
 pip install -r requirements.txt
 
 ### 3. Create your .env file
-Create a file called .env and add your API key:
-ANTHROPIC_API_KEY=your-anthropic-api-key-here
+Create a file called .env in the project root folder and add:
+GROQ_API_KEY=your-groq-api-key-here
 
-Get a free API key at: https://console.anthropic.com
+Get a FREE Groq API key (no credit card needed) at:
+https://console.groq.com/keys
 
 ### 4. Run CLI version (terminal-based)
 python vulnreportai.py
@@ -104,8 +105,7 @@ Built by Manikanth Pattar
 Cybersecurity Engineer | VAPT Specialist | Red Team Intern
 
 - LinkedIn: linkedin.com/in/manikanthpattar1441
-- GitHub: github.com/https://github.com/Mani1441
-- GitHub: https://github.com/Mani1441/
+- GitHub: https://github.com/Mani1441
 - Email: manikanthpattar1441@gmail.com
 
 Skills demonstrated in this project:
