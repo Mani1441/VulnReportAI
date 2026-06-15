@@ -3,7 +3,6 @@
 An intelligent penetration testing tool that automatically generates
 professional vulnerability assessment reports from raw finding data
 using the Groq AI API (Llama 3.3-70b model).
-
 ---
 
 ## What It Does
@@ -104,8 +103,9 @@ Home Page
 Built by Manikanth Pattar
 Cybersecurity Engineer | VAPT Specialist | Red Team Intern
 
-- LinkedIn: linkedin.com/in/manikanthpattar1441
+- LinkedIn: https://www.linkedin.com/in/manikanth-pattar1441/
 - GitHub: https://github.com/Mani1441
+- GitHub: https://github.com/Mani1441/
 - Email: manikanthpattar1441@gmail.com
 
 Skills demonstrated in this project:
