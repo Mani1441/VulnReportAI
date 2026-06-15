@@ -95,6 +95,7 @@ The reports/ folder contains sample reports generated for:
 
 Home Page
 ![Home Page](screenshots/Home_Page.png)
+![Report Page](screenshots/Report_Page.png)
 
 ---
 
