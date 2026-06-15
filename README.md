@@ -105,7 +105,6 @@ Cybersecurity Engineer | VAPT Specialist | Red Team Intern
 
 - LinkedIn: https://www.linkedin.com/in/manikanth-pattar1441/
 - GitHub: https://github.com/Mani1441
-- GitHub: https://github.com/Mani1441/
 - Email: manikanthpattar1441@gmail.com
 
 Skills demonstrated in this project:
